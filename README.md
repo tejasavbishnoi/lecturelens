@@ -129,3 +129,7 @@ lecturelens/
 ---
 
 Built by **Tejasav Bishnoi**
+
+## 📄 License
+
+MIT, see [LICENSE](./LICENSE).
