@@ -1,5 +1,7 @@
 # 🔍 LectureLens
 
+**🔗 Live demo: [lecturelens-azure.vercel.app](https://lecturelens-azure.vercel.app)**
+
 **Turn any lecture into a complete study kit.** Paste a YouTube link or upload a recording, and LectureLens uses AI to generate structured notes, flashcards, a scored quiz, and a chat tutor that answers questions from the lecture itself.
 
 <!-- Add a screenshot: save it as screenshot.png in the repo root, then uncomment the next line -->
