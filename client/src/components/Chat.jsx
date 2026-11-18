@@ -35,6 +35,7 @@ export default function Chat({ lecture, onUpdate }) {
     run(async () => {
       const data = await postJSON("/api/chat", {
         transcript: lecture.transcript,
+        language: lecture.language,
         messages: next,
       });
       onUpdate({ chat: [...next, { role: "model", text: data.reply }] });

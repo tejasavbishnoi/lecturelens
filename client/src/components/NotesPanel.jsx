@@ -73,7 +73,10 @@ export default function NotesPanel({ lecture, onUpdate, active }) {
 
   const generate = () =>
     run(async () => {
-      const data = await postJSON("/api/notes", { transcript: lecture.transcript });
+      const data = await postJSON("/api/notes", {
+        transcript: lecture.transcript,
+        language: lecture.language,
+      });
       onUpdate({ notes: data.notes });
     });
 

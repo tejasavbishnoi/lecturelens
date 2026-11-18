@@ -11,6 +11,7 @@ import {
   QUIZ_SYSTEM,
   QUIZ_SCHEMA,
   chatSystem,
+  withLanguage,
 } from "../utils/prompts.js";
 
 const router = Router();
@@ -110,7 +111,10 @@ router.post("/transcribe", upload.single("audio"), async (req, res) => {
 router.post("/notes", async (req, res) => {
   if (!needTranscript(req, res)) return;
   try {
-    const notes = await generate(`Lecture transcript:\n\n${req.body.transcript}`, NOTES_SYSTEM);
+    const notes = await generate(
+      `Lecture transcript:\n\n${req.body.transcript}`,
+      withLanguage(NOTES_SYSTEM, req.body.language)
+    );
     res.json({ notes });
   } catch (err) {
     aiError(res, "Notes", err);
@@ -123,7 +127,7 @@ router.post("/flashcards", async (req, res) => {
   try {
     const data = await generateJSON(
       `Lecture transcript:\n\n${req.body.transcript}`,
-      FLASHCARDS_SYSTEM,
+      withLanguage(FLASHCARDS_SYSTEM, req.body.language),
       FLASHCARDS_SCHEMA
     );
     res.json({ cards: data.cards });
@@ -138,7 +142,7 @@ router.post("/quiz", async (req, res) => {
   try {
     const data = await generateJSON(
       `Lecture transcript:\n\n${req.body.transcript}`,
-      QUIZ_SYSTEM,
+      withLanguage(QUIZ_SYSTEM, req.body.language),
       QUIZ_SCHEMA
     );
     // Safety net: drop any malformed questions
@@ -163,7 +167,10 @@ router.post("/chat", async (req, res) => {
     return res.status(400).json({ error: "No message provided." });
   }
   try {
-    const reply = await chat(messages.slice(-20), chatSystem(req.body.transcript));
+    const reply = await chat(
+      messages.slice(-20),
+      withLanguage(chatSystem(req.body.transcript), req.body.language)
+    );
     res.json({ reply });
   } catch (err) {
     aiError(res, "Chat", err);

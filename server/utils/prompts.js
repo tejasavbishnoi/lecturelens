@@ -74,3 +74,24 @@ Answer questions using the lecture transcript below. Rules:
 LECTURE TRANSCRIPT:
 ${transcript}`;
 }
+
+// ---------- Output language ----------
+const LANGUAGE_RULES = {
+  English:
+    "Write everything in English, even if the lecture itself is in another language.",
+  Hindi:
+    "Write everything in Hindi using Devanagari script, even if the lecture is in English. " +
+    "Keep technical terms (like function, database, algorithm) in English where that is how Indian students normally say them.",
+  Hinglish:
+    "Write everything in Hinglish: Hindi written in Roman (English) letters, mixed naturally with English, " +
+    "the way Indian students talk and text. Example: \"Is function ka kaam array ko sort karna hai.\" " +
+    "Keep technical terms in English.",
+};
+
+export const LANGUAGES = Object.keys(LANGUAGE_RULES);
+
+// Adds the language rule to any system prompt (JSON keys always stay in English)
+export function withLanguage(system, language) {
+  const rule = LANGUAGE_RULES[language] || LANGUAGE_RULES.English;
+  return `${system}\n\nOUTPUT LANGUAGE: ${rule} If you return JSON, keep the JSON keys exactly as specified and only translate the values.`;
+}

@@ -28,7 +28,10 @@ export default function Quiz({ lecture, onUpdate }) {
 
   const generate = () =>
     run(async () => {
-      const data = await postJSON("/api/quiz", { transcript: lecture.transcript });
+      const data = await postJSON("/api/quiz", {
+        transcript: lecture.transcript,
+        language: lecture.language,
+      });
       onUpdate({ quiz: data.questions, quizBest: null });
       restart();
     });

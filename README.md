@@ -15,6 +15,7 @@
 - **📄 Transcript viewer**: full-text search with highlighting, copy and download
 - **History**: every lecture and everything generated for it is saved in the browser
 - **One-click example lectures** on the home screen, so anyone can try it instantly
+- **🌐 Study material language**: get notes, flashcards, quizzes and chat in English, Hindi or Hinglish, whatever language the lecture is in
 
 ### Polish
 - Dark and light themes (remembered between visits)

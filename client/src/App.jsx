@@ -5,7 +5,7 @@ import LectureView from "./components/LectureView";
 import Logo from "./components/Logo";
 import Modal from "./components/Modal";
 import ShortcutsDialog from "./components/ShortcutsDialog";
-import { loadLectures, saveLectures, newId } from "./lib/storage";
+import { loadLectures, saveLectures, newId, getPreferredLanguage } from "./lib/storage";
 import { getTheme, applyTheme } from "./lib/theme";
 import { useToast } from "./lib/toast";
 import { isTyping } from "./lib/utils";
@@ -53,7 +53,7 @@ export default function App() {
   }
 
   function addLecture(data) {
-    const lecture = { id: newId(), createdAt: Date.now(), ...data };
+    const lecture = { id: newId(), createdAt: Date.now(), language: getPreferredLanguage(), ...data };
     commit((prev) => [lecture, ...prev]);
     setActiveId(lecture.id);
     toast("Lecture ready. Pick a tool to start");

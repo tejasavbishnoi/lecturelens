@@ -22,7 +22,10 @@ export default function Flashcards({ lecture, onUpdate, active }) {
 
   const generate = () =>
     run(async () => {
-      const data = await postJSON("/api/flashcards", { transcript: lecture.transcript });
+      const data = await postJSON("/api/flashcards", {
+        transcript: lecture.transcript,
+        language: lecture.language,
+      });
       onUpdate({ cards: data.cards });
       setIndex(0);
       setFlipped(false);

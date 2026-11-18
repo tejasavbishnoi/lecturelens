@@ -5,6 +5,8 @@ import Quiz from "./Quiz";
 import Chat from "./Chat";
 import TranscriptPanel from "./TranscriptPanel";
 import { formatMinutes, isTyping } from "../lib/utils";
+import { LANGUAGES, setPreferredLanguage } from "../lib/storage";
+import { useToast } from "../lib/toast";
 
 const TABS = [
   { id: "notes", label: "Notes", icon: "📝" },
@@ -15,7 +17,16 @@ const TABS = [
 ];
 
 export default function LectureView({ lecture, onUpdate }) {
+  const toast = useToast();
   const [tab, setTab] = useState("notes");
+  const language = lecture.language || "English";
+
+  function changeLanguage(next) {
+    onUpdate({ language: next });
+    setPreferredLanguage(next);
+    const hasContent = lecture.notes || lecture.cards?.length || lecture.quiz?.length;
+    toast(hasContent ? `${next} selected. Use ↻ Regenerate to update existing content` : `Study material will be in ${next}`);
+  }
 
   // Keys 1-5 switch tabs
   useEffect(() => {
@@ -87,6 +98,16 @@ export default function LectureView({ lecture, onUpdate }) {
           </span>
           <h1>{lecture.title}</h1>
           <p className="muted">{meta}</p>
+          <label className="lang-picker">
+            <span>🌐 Study material in</span>
+            <select value={language} onChange={(e) => changeLanguage(e.target.value)}>
+              {LANGUAGES.map((l) => (
+                <option key={l} value={l}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       </header>
 
