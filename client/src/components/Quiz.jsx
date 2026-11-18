@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { postJSON } from "../lib/api";
 import useAsync from "../lib/useAsync";
+import { confetti } from "../lib/confetti";
 import GeneratePrompt from "./GeneratePrompt";
+import LoadingState from "./LoadingState";
 
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
+const STEPS = [
+  "Reading the lecture…",
+  "Choosing what to test…",
+  "Writing tricky options…",
+  "Adding explanations…",
+];
 
 export default function Quiz({ lecture, onUpdate }) {
   const { loading, error, run } = useAsync();
@@ -25,6 +33,8 @@ export default function Quiz({ lecture, onUpdate }) {
       restart();
     });
 
+  if (loading) return <LoadingState messages={STEPS} variant="quiz" />;
+
   if (questions.length === 0) {
     return (
       <GeneratePrompt
@@ -32,8 +42,6 @@ export default function Quiz({ lecture, onUpdate }) {
         title="Test yourself"
         text="10 multiple-choice questions with explanations, built from this lecture."
         action="🎯 Start a quiz"
-        loading={loading}
-        loadingText="Writing questions…"
         error={error}
         onClick={generate}
       />
@@ -57,7 +65,12 @@ export default function Quiz({ lecture, onUpdate }) {
     return (
       <div className="quiz">
         <div className="result">
-          <div className="score-ring" style={{ "--pct": pct }}>
+          <div
+            className="score-ring"
+            style={{ "--pct": pct }}
+            role="img"
+            aria-label={`Score ${score} out of ${questions.length}`}
+          >
             <div>
               {score}/{questions.length}
             </div>
@@ -71,17 +84,15 @@ export default function Quiz({ lecture, onUpdate }) {
             <button className="btn btn-ghost" onClick={restart}>
               ↻ Retry this quiz
             </button>
-            <button className="btn btn-primary" onClick={generate} disabled={loading}>
-              {loading ? (
-                <>
-                  <span className="spinner" /> Writing…
-                </>
-              ) : (
-                "New questions"
-              )}
+            <button className="btn btn-primary" onClick={generate}>
+              New questions
             </button>
           </div>
-          {error && <p className="error">{error}</p>}
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
         </div>
 
         <div className="review">
@@ -123,6 +134,7 @@ export default function Quiz({ lecture, onUpdate }) {
       return;
     }
     setFinished(true);
+    if (score === questions.length) confetti();
     if (lecture.quizBest == null || score > lecture.quizBest) onUpdate({ quizBest: score });
   }
 
@@ -136,11 +148,19 @@ export default function Quiz({ lecture, onUpdate }) {
         </span>
         <span>Score: {score}</span>
       </div>
-      <div className="progress">
+      <div
+        className="progress"
+        role="progressbar"
+        aria-valuenow={Math.round(progress)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
         <span style={{ width: `${progress}%` }} />
       </div>
 
-      <h2 className="quiz-question">{q.question}</h2>
+      <h2 className="quiz-question" key={current}>
+        {q.question}
+      </h2>
 
       <div className="options">
         {q.options.map((opt, i) => {
@@ -152,7 +172,9 @@ export default function Quiz({ lecture, onUpdate }) {
           }
           return (
             <button key={i} className={cls} onClick={() => choose(i)} disabled={answered}>
-              <span className="option-letter">{LETTERS[i]}</span>
+              <span className="option-letter" aria-hidden="true">
+                {LETTERS[i]}
+              </span>
               <span>{opt}</span>
             </button>
           );
@@ -160,7 +182,7 @@ export default function Quiz({ lecture, onUpdate }) {
       </div>
 
       {answered && (
-        <div className={`explain ${chosen === q.answerIndex ? "good" : "bad"}`}>
+        <div className={`explain ${chosen === q.answerIndex ? "good" : "bad"}`} role="status">
           <strong>{chosen === q.answerIndex ? "✓ Correct" : "✗ Not quite"}</strong>
           <p>{q.explanation}</p>
         </div>

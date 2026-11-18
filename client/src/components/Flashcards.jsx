@@ -1,10 +1,20 @@
 import { useEffect, useState } from "react";
 import { postJSON } from "../lib/api";
 import useAsync from "../lib/useAsync";
+import { useToast } from "../lib/toast";
 import GeneratePrompt from "./GeneratePrompt";
+import LoadingState from "./LoadingState";
 import "./Flashcards.css";
 
+const STEPS = [
+  "Reading the lecture…",
+  "Picking the most important concepts…",
+  "Writing questions…",
+  "Checking the answers…",
+];
+
 export default function Flashcards({ lecture, onUpdate, active }) {
+  const toast = useToast();
   const { loading, error, run } = useAsync();
   const cards = lecture.cards || [];
   const [index, setIndex] = useState(0);
@@ -32,13 +42,15 @@ export default function Flashcards({ lecture, onUpdate, active }) {
     onUpdate({ cards: s });
     setIndex(0);
     setFlipped(false);
+    toast("Cards shuffled");
   }
 
   // Keyboard: ← → to move, Space to flip (only while this tab is open)
   useEffect(() => {
-    if (!active || cards.length === 0) return;
+    if (!active || cards.length === 0 || loading) return;
     function onKey(e) {
       if (["INPUT", "TEXTAREA", "BUTTON"].includes(e.target.tagName)) return;
+      if (document.querySelector(".modal")) return;
       if (e.key === "ArrowRight") go(1);
       else if (e.key === "ArrowLeft") go(-1);
       else if (e.key === " ") {
@@ -50,6 +62,8 @@ export default function Flashcards({ lecture, onUpdate, active }) {
     return () => window.removeEventListener("keydown", onKey);
   });
 
+  if (loading) return <LoadingState messages={STEPS} variant="cards" />;
+
   if (cards.length === 0) {
     return (
       <GeneratePrompt
@@ -57,8 +71,6 @@ export default function Flashcards({ lecture, onUpdate, active }) {
         title="Flashcards"
         text="Question-and-answer cards for the key ideas in this lecture."
         action="🃏 Make flashcards"
-        loading={loading}
-        loadingText="Making flashcards…"
         error={error}
         onClick={generate}
       />
@@ -78,18 +90,26 @@ export default function Flashcards({ lecture, onUpdate, active }) {
           <button className="btn btn-ghost btn-sm" onClick={shuffle}>
             ⤮ Shuffle
           </button>
-          <button className="btn btn-ghost btn-sm" onClick={generate} disabled={loading}>
-            {loading ? "Making…" : "↻ New set"}
+          <button className="btn btn-ghost btn-sm" onClick={generate}>
+            ↻ New set
           </button>
         </div>
       </div>
-      {error && <p className="error">{error}</p>}
+      {error && (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      )}
 
       {/* key={current} makes each new card start face-up without a flip animation */}
       <div
         key={current}
         className={`fc-card ${flipped ? "flipped" : ""}`}
         onClick={() => setFlipped((f) => !f)}
+        onKeyDown={(e) => e.key === "Enter" && setFlipped((f) => !f)}
+        role="button"
+        tabIndex={0}
+        aria-label={flipped ? `Answer: ${card.back}` : `Question: ${card.front}. Press to flip.`}
       >
         <div className="fc-inner">
           <div className="fc-face fc-front">
@@ -104,7 +124,7 @@ export default function Flashcards({ lecture, onUpdate, active }) {
       </div>
 
       <div className="fc-controls">
-        <button className="btn btn-ghost" onClick={() => go(-1)}>
+        <button className="btn btn-ghost" onClick={() => go(-1)} aria-label="Previous card">
           ← Prev
         </button>
         <div className="fc-dots">
@@ -112,7 +132,8 @@ export default function Flashcards({ lecture, onUpdate, active }) {
             <button
               key={i}
               className={i === current ? "on" : ""}
-              aria-label={`Card ${i + 1}`}
+              aria-label={`Go to card ${i + 1}`}
+              aria-current={i === current ? "true" : undefined}
               onClick={() => {
                 setIndex(i);
                 setFlipped(false);
@@ -120,7 +141,7 @@ export default function Flashcards({ lecture, onUpdate, active }) {
             />
           ))}
         </div>
-        <button className="btn btn-ghost" onClick={() => go(1)}>
+        <button className="btn btn-ghost" onClick={() => go(1)} aria-label="Next card">
           Next →
         </button>
       </div>

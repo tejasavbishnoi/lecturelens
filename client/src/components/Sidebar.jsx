@@ -1,9 +1,18 @@
 import Logo from "./Logo";
 import { timeAgo } from "../lib/utils";
 
-export default function Sidebar({ lectures, activeId, onSelect, onNew, onDelete }) {
+export default function Sidebar({
+  lectures,
+  activeId,
+  onSelect,
+  onNew,
+  onDelete,
+  theme,
+  onToggleTheme,
+  onShowShortcuts,
+}) {
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" aria-label="Lecture history">
       <div className="sidebar-top">
         <Logo />
         <button className="btn btn-primary btn-block" onClick={onNew}>
@@ -25,11 +34,14 @@ export default function Sidebar({ lectures, activeId, onSelect, onNew, onDelete 
             onKeyDown={(e) => e.key === "Enter" && onSelect(l.id)}
             role="button"
             tabIndex={0}
+            aria-current={l.id === activeId ? "page" : undefined}
           >
             {l.thumbnail ? (
               <img src={l.thumbnail} alt="" className="history-thumb" />
             ) : (
-              <div className="history-thumb placeholder">🎙️</div>
+              <div className="history-thumb placeholder" aria-hidden="true">
+                🎙️
+              </div>
             )}
             <div className="history-text">
               <span className="history-title">{l.title}</span>
@@ -37,11 +49,11 @@ export default function Sidebar({ lectures, activeId, onSelect, onNew, onDelete 
             </div>
             <button
               className="history-delete"
-              aria-label="Delete lecture"
+              aria-label={`Delete ${l.title}`}
               title="Delete"
               onClick={(e) => {
                 e.stopPropagation();
-                if (confirm(`Delete "${l.title}"?`)) onDelete(l.id);
+                onDelete(l);
               }}
             >
               ×
@@ -50,7 +62,27 @@ export default function Sidebar({ lectures, activeId, onSelect, onNew, onDelete 
         ))}
       </div>
 
-      <p className="sidebar-foot">Saved in this browser</p>
+      <div className="sidebar-foot">
+        <span>Saved in this browser</span>
+        <div className="foot-actions">
+          <button
+            className="icon-btn sm"
+            onClick={onShowShortcuts}
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
+          >
+            ⌨
+          </button>
+          <button
+            className="icon-btn sm"
+            onClick={onToggleTheme}
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            title={theme === "dark" ? "Light mode" : "Dark mode"}
+          >
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
+        </div>
+      </div>
     </aside>
   );
 }

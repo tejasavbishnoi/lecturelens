@@ -37,3 +37,9 @@ export function formatSize(bytes) {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+// True when the user is typing in a field (so keyboard shortcuts should be ignored)
+export function isTyping(e) {
+  const t = e.target;
+  return t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName);
+}

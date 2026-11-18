@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
+import { useToast } from "../lib/toast";
 import { downloadText, slugify } from "../lib/utils";
 
 export default function TranscriptPanel({ lecture }) {
+  const toast = useToast();
   const [query, setQuery] = useState("");
-  const [copied, setCopied] = useState(false);
 
   // Split the transcript around search matches so they can be highlighted
   const { parts, count } = useMemo(() => {
@@ -15,9 +16,17 @@ export default function TranscriptPanel({ lecture }) {
   }, [query, lecture.transcript]);
 
   async function copy() {
-    await navigator.clipboard.writeText(lecture.transcript);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(lecture.transcript);
+      toast("Transcript copied to clipboard");
+    } catch {
+      toast("Couldn't copy, so try Download instead", "error");
+    }
+  }
+
+  function download() {
+    downloadText(`${slugify(lecture.title)}-transcript.txt`, lecture.transcript);
+    toast("Transcript downloaded");
   }
 
   return (
@@ -29,25 +38,23 @@ export default function TranscriptPanel({ lecture }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search the transcript…"
+          aria-label="Search the transcript"
         />
         {query.trim().length >= 2 && (
-          <span className="muted">
+          <span className="muted" role="status">
             {count} match{count === 1 ? "" : "es"}
           </span>
         )}
         <div className="spacer" />
         <button className="btn btn-ghost btn-sm" onClick={copy}>
-          {copied ? "✓ Copied" : "Copy"}
+          Copy
         </button>
-        <button
-          className="btn btn-ghost btn-sm"
-          onClick={() => downloadText(`${slugify(lecture.title)}-transcript.txt`, lecture.transcript)}
-        >
+        <button className="btn btn-ghost btn-sm" onClick={download}>
           Download .txt
         </button>
       </div>
 
-      <div className="transcript-text">
+      <div className="transcript-text" tabIndex={0} aria-label="Transcript">
         {parts.map((p, i) => (i % 2 ? <mark key={i}>{p}</mark> : <span key={i}>{p}</span>))}
       </div>
     </div>

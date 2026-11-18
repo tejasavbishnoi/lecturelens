@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NotesPanel from "./NotesPanel";
 import Flashcards from "./Flashcards";
 import Quiz from "./Quiz";
 import Chat from "./Chat";
 import TranscriptPanel from "./TranscriptPanel";
-import { formatMinutes } from "../lib/utils";
+import { formatMinutes, isTyping } from "../lib/utils";
 
 const TABS = [
   { id: "notes", label: "Notes", icon: "📝" },
@@ -16,6 +16,18 @@ const TABS = [
 
 export default function LectureView({ lecture, onUpdate }) {
   const [tab, setTab] = useState("notes");
+
+  // Keys 1-5 switch tabs
+  useEffect(() => {
+    function onKey(e) {
+      if (isTyping(e) || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (document.querySelector(".modal")) return;
+      const n = Number(e.key);
+      if (n >= 1 && n <= TABS.length) setTab(TABS[n - 1].id);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const ready = {
     notes: Boolean(lecture.notes),
@@ -34,6 +46,20 @@ export default function LectureView({ lecture, onUpdate }) {
     .filter(Boolean)
     .join(" · ");
 
+  function panel(id, content) {
+    return (
+      <div
+        role="tabpanel"
+        id={`panel-${id}`}
+        aria-labelledby={`tab-${id}`}
+        className="tab-panel"
+        hidden={tab !== id}
+      >
+        {content}
+      </div>
+    );
+  }
+
   return (
     <div className="lecture">
       <header className="lecture-header">
@@ -45,11 +71,15 @@ export default function LectureView({ lecture, onUpdate }) {
             rel="noreferrer"
             title="Watch on YouTube"
           >
-            <img src={lecture.thumbnail} alt="" />
-            <span className="play">▶</span>
+            <img src={lecture.thumbnail} alt={`Thumbnail for ${lecture.title}`} />
+            <span className="play" aria-hidden="true">
+              ▶
+            </span>
           </a>
         ) : (
-          <div className="lecture-icon">🎙️</div>
+          <div className="lecture-icon" aria-hidden="true">
+            🎙️
+          </div>
         )}
         <div className="lecture-info">
           <span className="eyebrow">
@@ -60,36 +90,34 @@ export default function LectureView({ lecture, onUpdate }) {
         </div>
       </header>
 
-      <nav className="tabs">
-        {TABS.map((t) => (
+      <nav className="tabs" role="tablist" aria-label="Study tools">
+        {TABS.map((t, i) => (
           <button
             key={t.id}
+            id={`tab-${t.id}`}
+            role="tab"
+            aria-selected={tab === t.id}
+            aria-controls={`panel-${t.id}`}
             className={`tab ${tab === t.id ? "on" : ""}`}
             onClick={() => setTab(t.id)}
+            title={`${t.label} (${i + 1})`}
           >
-            <span>{t.icon}</span>
+            <span aria-hidden="true">{t.icon}</span>
             {t.label}
-            {ready[t.id] && <span className="dot" title="Ready" />}
+            {ready[t.id] && <span className="dot" aria-label="ready" />}
           </button>
         ))}
       </nav>
 
       {/* All panels stay mounted so a running generation isn't lost when you switch tabs */}
-      <div hidden={tab !== "notes"}>
-        <NotesPanel lecture={lecture} onUpdate={onUpdate} />
-      </div>
-      <div hidden={tab !== "flashcards"}>
+      {panel("notes", <NotesPanel lecture={lecture} onUpdate={onUpdate} active={tab === "notes"} />)}
+      {panel(
+        "flashcards",
         <Flashcards lecture={lecture} onUpdate={onUpdate} active={tab === "flashcards"} />
-      </div>
-      <div hidden={tab !== "quiz"}>
-        <Quiz lecture={lecture} onUpdate={onUpdate} />
-      </div>
-      <div hidden={tab !== "chat"}>
-        <Chat lecture={lecture} onUpdate={onUpdate} />
-      </div>
-      <div hidden={tab !== "transcript"}>
-        <TranscriptPanel lecture={lecture} />
-      </div>
+      )}
+      {panel("quiz", <Quiz lecture={lecture} onUpdate={onUpdate} />)}
+      {panel("chat", <Chat lecture={lecture} onUpdate={onUpdate} />)}
+      {panel("transcript", <TranscriptPanel lecture={lecture} />)}
     </div>
   );
 }

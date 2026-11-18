@@ -1,30 +1,20 @@
 // Empty state shown before a feature has been generated
-export default function GeneratePrompt({
-  icon,
-  title,
-  text,
-  action,
-  loading,
-  loadingText,
-  error,
-  onClick,
-}) {
+export default function GeneratePrompt({ icon, title, text, action, error, onClick }) {
   return (
     <div className="empty">
-      <div className="empty-icon">{icon}</div>
+      <div className="empty-icon" aria-hidden="true">
+        {icon}
+      </div>
       <h2>{title}</h2>
       <p className="muted">{text}</p>
-      <button className="btn btn-primary" onClick={onClick} disabled={loading}>
-        {loading ? (
-          <>
-            <span className="spinner" /> {loadingText}
-          </>
-        ) : (
-          action
-        )}
+      <button className="btn btn-primary" onClick={onClick}>
+        {action}
       </button>
-      {loading && <p className="hint">Long lectures can take up to a minute.</p>}
-      {error && <p className="error">{error}</p>}
+      {error && (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

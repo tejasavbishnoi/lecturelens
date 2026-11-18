@@ -52,7 +52,7 @@
 }
 
 .fc-front {
-  background: radial-gradient(120% 120% at 0% 0%, #242b3d 0%, var(--surface) 55%);
+  background: radial-gradient(120% 120% at 0% 0%, var(--card-glow) 0%, var(--surface) 55%);
 }
 
 .fc-back {
@@ -70,7 +70,7 @@
 }
 
 .fc-back .fc-label {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .fc-face p {

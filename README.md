@@ -14,7 +14,19 @@
 - **💬 Chat with the lecture**: multi-turn Q&A grounded in the transcript
 - **📄 Transcript viewer**: full-text search with highlighting, copy and download
 - **History**: every lecture and everything generated for it is saved in the browser
-- Responsive dark UI that works on desktop and mobile
+- **One-click example lectures** on the home screen, so anyone can try it instantly
+
+### Polish
+- Dark and light themes (remembered between visits)
+- Skeleton loaders with step-by-step progress messages while the AI works
+- Toast notifications, styled confirm dialogs, smooth tab and message transitions
+- Notes have a sticky table of contents with scroll-spy and a reading progress bar
+- Confetti for a perfect quiz score 🎉
+- Keyboard shortcuts (press `?` to see them all)
+- Accessible: semantic tabs, ARIA labels, visible focus rings, skip link, reduced-motion support
+- Error boundary with a friendly recovery screen instead of a blank page
+- Open Graph / Twitter cards for rich link previews
+- Responsive layout for desktop and mobile
 
 ## 🛠 Tech stack
 
@@ -67,6 +79,13 @@ npm run dev               # http://localhost:5173
 | `GEMINI_MODEL`   | Model to use (default `gemini-4-hydrogen`)    |
 
 Run `node list-models.js` inside `server/` to see every model your key can use.
+
+### Frontend variables (set on Vercel when deploying)
+
+| Variable        | Description                                              |
+| --------------- | -------------------------------------------------------- |
+| `VITE_API_URL`  | URL of the deployed backend, e.g. `https://xyz.onrender.com` |
+| `VITE_SITE_URL` | URL of the deployed frontend (used for link previews)    |
 
 ## 📡 API
 

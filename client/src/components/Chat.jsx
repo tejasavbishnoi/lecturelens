@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { postJSON } from "../lib/api";
 import useAsync from "../lib/useAsync";
+import { useToast } from "../lib/toast";
 
 const SUGGESTIONS = [
   "Summarize this lecture in 5 bullet points",
@@ -11,6 +12,7 @@ const SUGGESTIONS = [
 ];
 
 export default function Chat({ lecture, onUpdate }) {
+  const toast = useToast();
   const messages = lecture.chat || [];
   const [input, setInput] = useState("");
   const { loading, error, run } = useAsync();
@@ -46,25 +48,28 @@ export default function Chat({ lecture, onUpdate }) {
     }
   }
 
+  function clear() {
+    onUpdate({ chat: [] });
+    toast("Chat cleared");
+  }
+
   return (
     <div>
       {messages.length > 0 && (
         <div className="panel-toolbar">
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={() => onUpdate({ chat: [] })}
-            disabled={loading}
-          >
+          <button className="btn btn-ghost btn-sm" onClick={clear} disabled={loading}>
             Clear chat
           </button>
         </div>
       )}
 
       <div className="chat">
-        <div className="chat-messages" ref={listRef}>
+        <div className="chat-messages" ref={listRef} aria-live="polite">
           {messages.length === 0 && !loading && (
             <div className="chat-intro">
-              <div className="empty-icon">💬</div>
+              <div className="empty-icon" aria-hidden="true">
+                💬
+              </div>
               <h2>Ask anything about this lecture</h2>
               <p className="muted">
                 Answers come from the lecture itself, so you get what was actually taught.
@@ -94,13 +99,17 @@ export default function Chat({ lecture, onUpdate }) {
           )}
 
           {loading && (
-            <div className="msg model typing">
+            <div className="msg model typing" aria-label="LectureLens is typing">
               <span />
               <span />
               <span />
             </div>
           )}
-          {error && <p className="error">{error}</p>}
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
         </div>
 
         <form
@@ -116,6 +125,7 @@ export default function Chat({ lecture, onUpdate }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Ask a question about the lecture…"
+            aria-label="Your question"
           />
           <button className="btn btn-primary" type="submit" disabled={loading || !input.trim()}>
             Send
