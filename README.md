@@ -55,7 +55,7 @@ React client  ──/api──▶  Express server  ──▶  YouTube captions /
 **Requirements:** Node.js 20+ and a free Gemini API key from [Google AI Studio](https://aistudio.google.com).
 
 ```bash
-git clone https://github.com/<your-username>/lecturelens.git
+git clone https://github.com/tejasavbishnoi/lecturelens.git
 cd lecturelens
 
 # Backend

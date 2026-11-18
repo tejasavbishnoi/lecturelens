@@ -1,7 +1,6 @@
 // ✏️ Edit these with your own details
 export const AUTHOR = "Tejasav Bishnoi";
-export const GITHUB_URL = "https://github.com/YOUR-USERNAME/lecturelens";
-export const LINKEDIN_URL = "https://www.linkedin.com/in/YOUR-PROFILE";
+export const GITHUB_URL = "https://github.com/tejasavbishnoi/lecturelens";
 
 // One-click example lectures on the home screen (all have captions)
 export const EXAMPLES = [
