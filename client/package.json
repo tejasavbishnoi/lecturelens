@@ -10,10 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@google/genai": "^3.6.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "youtube-transcript-plus": "^2.0.5"
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
