@@ -4,8 +4,7 @@
 
 **Turn any lecture into a complete study kit.** Paste a YouTube link or upload a recording, and LectureLens uses AI to generate structured notes, flashcards, a scored quiz, and a chat tutor that answers questions from the lecture itself.
 
-<!-- Add a screenshot: save it as screenshot.png in the repo root, then uncomment the next line -->
-<!-- ![LectureLens screenshot](./screenshot.png) -->
+![LectureLens home screen](./screenshot.png)
 
 ## ✨ Features
 
@@ -52,6 +51,8 @@ React client  ──/api──▶  Express server  ──▶  YouTube captions /
 - Flashcards and quizzes use Gemini's **structured output** (`responseSchema`), so responses are always valid JSON.
 - Long lectures (4+ hours, 30k+ words) fit in a single request thanks to Gemini's 1M-token context, so there's no chunking.
 - Uploaded recordings go through the Gemini Files API and are deleted after transcription.
+- If YouTube blocks caption requests (common on cloud hosts) or a video has no captions, Gemini transcribes the video straight from its link, using audio only to save tokens.
+- Every Gemini call retries automatically when the model is overloaded, then falls back to a backup model.
 
 ## 🚀 Run it locally
 
@@ -80,6 +81,7 @@ npm run dev               # http://localhost:5173
 | `PORT`           | Server port (default `5001`)                  |
 | `GEMINI_API_KEY` | Your Gemini API key                           |
 | `GEMINI_MODEL`   | Model to use (default `gemini-4-hydrogen`)    |
+| `GEMINI_FALLBACK_MODEL` | Backup model used when the main one is overloaded (default `gemini-4-carbon`) |
 
 Run `node list-models.js` inside `server/` to see every model your key can use.
 

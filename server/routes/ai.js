@@ -9,6 +9,7 @@ import {
   chat,
   transcribeFile,
   transcribeYouTube,
+  isBusyError,
 } from "../utils/gemini.js";
 import {
   NOTES_SYSTEM,
@@ -35,8 +36,12 @@ function needTranscript(req, res) {
   return true;
 }
 
+const BUSY_MESSAGE =
+  "Gemini is very busy right now (high demand on Google's side). Please try again in a minute.";
+
 function aiError(res, label, err) {
   console.error(`${label} error:`, err.message);
+  if (isBusyError(err)) return res.status(503).json({ error: BUSY_MESSAGE });
   res.status(500).json({ error: `AI error: ${err.message}` });
 }
 
@@ -68,6 +73,7 @@ router.post("/transcript", async (req, res) => {
       transcribedBy = "gemini";
     } catch (err) {
       console.error("Gemini YouTube transcription error:", err.message);
+      if (isBusyError(err)) return res.status(503).json({ error: BUSY_MESSAGE });
       return res.status(500).json({
         error:
           "Couldn't transcribe this video. It may be private, age-restricted, or very long " +
