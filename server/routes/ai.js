@@ -3,7 +3,13 @@ import multer from "multer";
 import os from "node:os";
 import { fetchTranscript } from "youtube-transcript-plus";
 import { getVideoId, decodeEntities } from "../utils/youtube.js";
-import { generate, generateJSON, chat, transcribeFile } from "../utils/gemini.js";
+import {
+  generate,
+  generateJSON,
+  chat,
+  transcribeFile,
+  transcribeYouTube,
+} from "../utils/gemini.js";
 import {
   NOTES_SYSTEM,
   FLASHCARDS_SYSTEM,
@@ -41,21 +47,34 @@ router.post("/transcript", async (req, res) => {
     return res.status(400).json({ error: "That doesn't look like a YouTube link." });
   }
 
-  let segments;
+  // 1) Fast path: YouTube captions
+  // 2) Fallback: Gemini transcribes the video from its link (no captions needed)
+  let text = "";
+  let transcribedBy = "captions";
   try {
-    segments = await fetchTranscript(videoId);
+    const segments = await fetchTranscript(videoId);
+    text = segments
+      .map((s) => decodeEntities(s.text))
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
   } catch (err) {
-    console.error("Transcript error:", err.message);
-    return res.status(500).json({
-      error: "Couldn't get captions for this video. Try one that has subtitles (CC).",
-    });
+    console.warn("Captions unavailable, using Gemini instead:", err.message);
   }
 
-  const text = segments
-    .map((s) => decodeEntities(s.text))
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
+  if (!text) {
+    try {
+      text = (await transcribeYouTube(videoId)).replace(/\s+/g, " ").trim();
+      transcribedBy = "gemini";
+    } catch (err) {
+      console.error("Gemini YouTube transcription error:", err.message);
+      return res.status(500).json({
+        error:
+          "Couldn't transcribe this video. It may be private, age-restricted, or very long " +
+          "(over ~4 hours). Try another video or upload the audio instead.",
+      });
+    }
+  }
 
   // Title + channel from YouTube's public oEmbed endpoint (no key needed)
   let title = "Untitled lecture";
@@ -81,6 +100,7 @@ router.post("/transcript", async (req, res) => {
     thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
     transcript: text,
     wordCount: text.split(" ").length,
+    transcribedBy,
   });
 });
 

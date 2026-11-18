@@ -91,3 +91,38 @@ export async function transcribeFile(filePath, mimeType) {
     fs.unlink(filePath).catch(() => {});
   }
 }
+
+// Fallback when YouTube blocks caption requests (common on cloud servers like Render)
+// or the video has no captions: Google's servers fetch the video and Gemini transcribes it.
+const TRANSCRIBE_PROMPT =
+  "Transcribe this lecture word for word as plain text in the language it is spoken. " +
+  "Do not add timestamps, speaker labels, headings, or commentary. Only output the transcript.";
+
+export async function transcribeYouTube(videoId) {
+  const fileUri = `https://www.youtube.com/watch?v=${videoId}`;
+
+  const request = (videoMetadata) =>
+    getClient().models.generateContent({
+      model: getModel(),
+      contents: [
+        {
+          role: "user",
+          parts: [{ fileData: { fileUri }, videoMetadata }, { text: TRANSCRIBE_PROMPT }],
+        },
+      ],
+      config: { maxOutputTokens: 65536 },
+    });
+
+  let response;
+  try {
+    // Audio only: far fewer tokens than video frames, so long lectures fit
+    response = await request({ contentLayers: ["AUDIO"] });
+  } catch (err) {
+    console.warn("Audio-only transcription failed, retrying with low frame rate:", err.message);
+    response = await request({ fps: 0.05 });
+  }
+
+  const text = (response.text || "").trim();
+  if (!text) throw new Error("Gemini returned an empty transcript.");
+  return text;
+}

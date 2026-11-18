@@ -13,7 +13,13 @@ const FEATURES = [
   { icon: "💬", title: "Chat", text: "Ask questions answered from the lecture itself." },
 ];
 
-const YOUTUBE_STEPS = ["Finding the video…", "Fetching captions…", "Cleaning up the transcript…"];
+const YOUTUBE_STEPS = [
+  "Finding the video…",
+  "Fetching captions…",
+  "No captions? Gemini is listening to the video instead…",
+  "Transcribing every word…",
+  "Long lectures can take a few minutes…",
+];
 const UPLOAD_STEPS = [
   "Uploading your recording…",
   "Gemini is listening…",
@@ -171,7 +177,7 @@ export default function NewLecture({ onCreated }) {
           </p>
         )}
         {mode === "youtube" && !error && !loading && (
-          <p className="hint">Works with any video that has captions (look for the CC button).</p>
+          <p className="hint">Works with any public video. Videos with captions are the fastest.</p>
         )}
       </div>
 
