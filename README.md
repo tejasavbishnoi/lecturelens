@@ -1,5 +1,7 @@
 # 🔍 LectureLens
 
+[![CI](https://github.com/tejasavbishnoi/lecturelens/actions/workflows/ci.yml/badge.svg)](https://github.com/tejasavbishnoi/lecturelens/actions/workflows/ci.yml)
+
 **🔗 Live demo: [lecturelens-azure.vercel.app](https://lecturelens-azure.vercel.app)**
 
 **Turn any lecture into a complete study kit.** Paste a YouTube link or upload a recording, and LectureLens uses AI to generate structured notes, flashcards, a scored quiz, and a chat tutor that answers questions from the lecture itself.
@@ -92,6 +94,41 @@ Run `node list-models.js` inside `server/` to see every model your key can use.
 | `VITE_API_URL`  | URL of the deployed backend, e.g. `https://xyz.onrender.com` |
 | `VITE_SITE_URL` | URL of the deployed frontend (used for link previews)    |
 
+## 🐳 Run the backend with Docker
+
+```bash
+docker build -t lecturelens-api ./server
+docker run -p 5001:5001 --env-file server/.env lecturelens-api
+# check it: curl http://localhost:5001/api/health
+```
+
+The image runs on `node:22-alpine` as a non-root user, installs only production dependencies, and has a built-in health check on `/api/health`.
+
+## ⚙️ CI/CD and deployment
+
+```
+git push ──▶ GitHub Actions ──▶ ✅ lint + build frontend
+                              ├─▶ ✅ start backend, check /api/health
+                              └─▶ ✅ build Docker image, run it, check /api/health
+        └──▶ Vercel (frontend) and Render (backend) redeploy automatically from main
+```
+
+- **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push and pull request, so broken code is caught before it ships.
+- **Frontend** is hosted on **Vercel**; **backend** on **Render**. Both redeploy on every push to `main`.
+- Secrets (`GEMINI_API_KEY`) live only in the hosting dashboards and never in the repo (`.env` is git-ignored and Docker-ignored).
+
+## 🤖 How I built it with AI tools
+
+<!-- Edit this section in your own words. Name the tools you actually used. -->
+
+I used AI coding assistants as a pair programmer throughout the project:
+
+- **Planning:** broke the app into features (transcripts → notes → flashcards → quiz → chat) and designed the API with AI help.
+- **Building:** generated first drafts of components and routes, then reviewed, debugged and refactored them myself.
+- **Debugging:** used AI to work out tricky issues, like YouTube blocking caption requests on cloud hosts, which led to the Gemini transcription fallback.
+- **Prompt engineering:** wrote and iterated on the Gemini prompts and JSON schemas that make flashcards and quizzes reliable.
+- **DevOps:** set up Docker and the GitHub Actions pipeline.
+
 ## 📡 API
 
 | Method | Endpoint           | Body                          | Returns                         |
@@ -116,7 +153,9 @@ lecturelens/
 └── server/                 # Express backend
     ├── routes/ai.js        # All API endpoints
     ├── utils/              # Gemini client, prompts + JSON schemas, YouTube helpers
+    ├── Dockerfile          # Production image
     └── index.js
+.github/workflows/ci.yml    # CI pipeline
 ```
 
 ## 🗺 Roadmap
