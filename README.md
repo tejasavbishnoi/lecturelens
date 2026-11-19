@@ -110,24 +110,23 @@ The image runs on `node:22-alpine` as a non-root user, installs only production 
 git push ──▶ GitHub Actions ──▶ ✅ lint + build frontend
                               ├─▶ ✅ start backend, check /api/health
                               └─▶ ✅ build Docker image, run it, check /api/health
-        └──▶ Vercel (frontend) and Render (backend) redeploy automatically from main
 ```
 
 - **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push and pull request, so broken code is caught before it ships.
-- **Frontend** is hosted on **Vercel**; **backend** on **Render**. Both redeploy on every push to `main`.
+- **Frontend** is hosted on **Vercel**; **backend** on **Render**.
 - Secrets (`GEMINI_API_KEY`) live only in the hosting dashboards and never in the repo (`.env` is git-ignored and Docker-ignored).
 
 ## 🤖 How I built it with AI tools
 
-<!-- Edit this section in your own words. Name the tools you actually used. -->
+I built LectureLens with **Claude** as my AI pair programmer. My job was to make the decisions, review every change, test it, and fix what broke. The AI's job was to help me move faster.
 
-I used AI coding assistants as a pair programmer throughout the project:
+- **Planning:** I chose the features (YouTube/audio → notes → flashcards → quiz → chat) and used Claude to break them into small build steps and design the API routes.
+- **Building:** Claude drafted components and Express routes; I read through them, ran them, and changed what didn't fit.
+- **Debugging real problems:** YouTube blocked caption requests once the server ran on Render. Working through it with Claude led to the fallback where Gemini transcribes the video directly from its link.
+- **Prompt engineering:** I iterated on the Gemini prompts and JSON schemas until flashcards and quizzes came back valid every time.
+- **DevOps:** set up the Dockerfile and the GitHub Actions pipeline, and tested them on every push.
 
-- **Planning:** broke the app into features (transcripts → notes → flashcards → quiz → chat) and designed the API with AI help.
-- **Building:** generated first drafts of components and routes, then reviewed, debugged and refactored them myself.
-- **Debugging:** used AI to work out tricky issues, like YouTube blocking caption requests on cloud hosts, which led to the Gemini transcription fallback.
-- **Prompt engineering:** wrote and iterated on the Gemini prompts and JSON schemas that make flashcards and quizzes reliable.
-- **DevOps:** set up Docker and the GitHub Actions pipeline.
+**What I learned:** AI is fast at writing first drafts, but the design decisions, testing and debugging are still on me. This project taught me how to give an AI clear, small tasks and how to check its output.
 
 ## 📡 API
 
